@@ -1,0 +1,7 @@
+T1_8.mat:
+
+T: (P)Train Data, (T)Test data, (S) Soln of Test data
+1: (1) Problem type 1, (2) Problem type 2, (3) Problem type 3
+_
+8: data is selected to be the 8th days. Just a parameter to choose randomly 3 days from a week data.
+.mat: matlab file format
