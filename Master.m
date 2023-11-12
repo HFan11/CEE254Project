@@ -1,1 +1,4 @@
-%This is a script
+% Import all constants
+constants;
+
+disp(RUN_TIME)
