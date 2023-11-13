@@ -1,6 +1,9 @@
 clear
 load Data\short_term_foshan_train_val.mat
 
+% Even in .mat, the mobile and static sensors are separated. Hence we dont
+% have to do anything to remove mobile data. Just dont load it.
+
 staticTable = data_static{1};
 for i = 2: length(data_static)
     staticTable = vertcat(staticTable, data_static{i});
@@ -10,13 +13,12 @@ for i = 2: length(data_mobile)
     mobileTable = vertcat(mobileTable, data_mobile{i});
 end
 disp("Loaded both static and mobile data")
-% Combine everythin into R x 7 matrix
-totalTable = vertcat(staticTable, mobileTable);
+% We have two R x 7 matrices
 
 
 %% Data for Problem one
 
-DataSize = 0.9;
+DataSize = 0.99;
 TestSize = 0.1;
 
 % Have data from Oct8 to Oct 15
@@ -24,19 +26,20 @@ selectedDays = [8, 10, 12];
 for i = 1:length(selectedDays)
     start_time = datetime(2018,10, selectedDays(i)) + hours(selectedDays(i)); % randomize so that the 3 days period starts at 8am, 10am, 12pm respectively
     end_time = start_time + days(3);
-    in_range = (totalTable.time >= start_time) & (totalTable.time <= end_time);
-    withinDateT=totalTable(in_range,:);
+    
+    % For Static sensor
+    in_range = (staticTable.time >= start_time) & (staticTable.time <= end_time);
+    withinDateT=staticTable(in_range,:);
     randomRowIndices = randperm(size(withinDateT,1), int64(size(withinDateT,1)*DataSize));
-    train_data = withinDateT(randomRowIndices, :);
-    %train_data = table2array(train_data);
+    train_data = withinDateT(randomRowIndices, :);    
     save( ['Data\P1_', num2str(selectedDays(i)), '.mat'], "train_data")
 
 
     % Working on the test and soln data
     start_time = end_time;
     end_time = start_time + hours(3); % 3 hour Data to predict
-    in_range = (totalTable.time >= start_time) & (totalTable.time <= end_time);
-    withinDateT=totalTable(in_range,:);
+    in_range = (staticTable.time >= start_time) & (staticTable.time <= end_time);
+    withinDateT=staticTable(in_range,:);
     randomRowIndices = randperm(size(withinDateT,1), int64(size(withinDateT,1)*TestSize));
     test_data = withinDateT(randomRowIndices, :);
 
@@ -71,11 +74,11 @@ selectedDays = [8, 10, 12];
 for i = 1:length(selectedDays)
     start_time = datetime(2018,10, selectedDays(i));
     end_time = start_time + days(3);
-    in_range = (totalTable.time >= start_time) & (totalTable.time <= end_time);
-    withinDateT=totalTable(in_range,:);
+    in_range = (staticTable.time >= start_time) & (staticTable.time <= end_time);
+    withinDateT=staticTable(in_range,:);
 
     start_time = start_time + days(1) + hours(11) + minutes(30);
-    end_time = start_time + minutes(60);
+    end_time = start_time + minutes(51);
     toDelete = (withinDateT.time >= start_time) & (withinDateT.time <= end_time);
     deletedData = withinDateT(toDelete,:);
     withinDateT(toDelete,:) = [];
@@ -85,13 +88,26 @@ for i = 1:length(selectedDays)
     save( ['Data\P3_', num2str(selectedDays(i)), '.mat'], "train_data")
 
     % Working on the test and soln data
-    withinDateT = deletedData;
-    randomRowIndices = randperm(size(withinDateT,1), int64(size(withinDateT,1)*TestSize));
-    test_data = withinDateT(randomRowIndices, :);
+    timePoints = start_time:minutes(5):end_time;
+    % Create sample data for other variables
+    hmd = rand(size(timePoints)) * NaN;  % Random humidity values
+    spd = rand(size(timePoints)) * NaN;   % Random speed values
+    tmp = randn(size(timePoints)) * NaN;  % Random temperature values
+    pm2d5 = rand(size(timePoints)) * NaN;  % Random PM2.5 values
+    lat = ones(size(timePoints)) * 23.0470182;  % Random latitude values
+    lon = ones(size(timePoints)) * 113.144248;  % Random longitude values
 
-    % Copy from HW1 of CEE254. To group data points by each 5 minute
-    % TODO NOT implemented.
+    test_data = table(timePoints', hmd', spd', tmp', pm2d5', lat', lon', 'VariableNames', {'Time', 'Humidity', 'Speed', 'Temperature', 'PM2.5', 'Latitude', 'Longitude'});
+    save( ['Data\T3_', num2str(selectedDays(i)), '.mat'], "test_data")
 
+    % Make the solution
+    % Specify the desired time interval (5 minutes)
+    timeInterval = minutes(5);
+    deletedData = table2timetable(deletedData);
+    resampledTable = retime(deletedData, 'minutely','mean');
+    resampledTable = retime(resampledTable,'regular','linear','TimeStep',timeInterval);
+    soln_data = resampledTable.pm2d5;
+    save( ['Data\S1_', num2str(selectedDays(i)), '.mat'], "soln_data")
 end
 
 %% End of Program

@@ -20,7 +20,7 @@ end
 disp("Loaded both static and mobile data")
 
 % Combine everythin into R x 7 matrix
-totalTable = vertcat(staticTable, mobileTable);
+%totalTable = vertcat(staticTable, mobileTable);
 
 
 %% Data for Problem two
@@ -34,8 +34,8 @@ for i = 1:length(daysAfter)
     % Working on getting the train data
     start_time = datetime(2018,4,24) + daysAfter(i) + hours(daysAfter(i)); % randomize so that the 3 days period starts at 8am, 10am, 12pm respectively
     end_time = start_time + days(7); % Week long data
-    in_range = (totalTable.time >= start_time) & (totalTable.time <= end_time);
-    withinDateT=totalTable(in_range,:);
+    in_range = (staticTable.time >= start_time) & (staticTable.time <= end_time);
+    withinDateT=staticTable(in_range,:);
     randomRowIndices = randperm(size(withinDateT,1), int64(size(withinDateT,1)*DataSize));
     train_data = withinDateT(randomRowIndices, :);
     %train_data = table2array(train_data);
@@ -44,8 +44,8 @@ for i = 1:length(daysAfter)
     % Working on getting the test data
     start_time = end_time;
     end_time = start_time + hours(24); % 24 hour Data to predict
-    in_range = (totalTable.time >= start_time) & (totalTable.time <= end_time);
-    withinDateT=totalTable(in_range,:);
+    in_range = (staticTable.time >= start_time) & (staticTable.time <= end_time);
+    withinDateT=staticTable(in_range,:);
     randomRowIndices = randperm(size(withinDateT,1), int64(size(withinDateT,1)*TestSize));
     test_data = withinDateT(randomRowIndices, :);
 
