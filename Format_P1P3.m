@@ -78,10 +78,16 @@ for i = 1:length(selectedDays)
     withinDateT=staticTable(in_range,:);
 
     start_time = start_time + days(1) + hours(11) + minutes(30);
-    end_time = start_time + minutes(51);
+    end_time = start_time + minutes(60);
     toDelete = (withinDateT.time >= start_time) & (withinDateT.time <= end_time);
     deletedData = withinDateT(toDelete,:);
     withinDateT(toDelete,:) = [];
+
+    % To account for deleting from 11:30 - 12:30. Yet test for 11:30 -
+    % 12:25
+    end_time = start_time + minutes(55);
+    toTest = (deletedData.time >= start_time) & (deletedData.time <= end_time);
+    TestData = deletedData(toTest,:);
 
     randomRowIndices = randperm(size(withinDateT,1), int64(size(withinDateT,1)*DataSize));
     train_data = withinDateT(randomRowIndices, :);
@@ -103,11 +109,11 @@ for i = 1:length(selectedDays)
     % Make the solution
     % Specify the desired time interval (5 minutes)
     timeInterval = minutes(5);
-    deletedData = table2timetable(deletedData);
-    resampledTable = retime(deletedData, 'minutely','mean');
+    TestData = table2timetable(TestData);
+    resampledTable = retime(TestData, 'minutely','mean');
     resampledTable = retime(resampledTable,'regular','linear','TimeStep',timeInterval);
     soln_data = resampledTable.pm2d5;
-    save( ['Data\S1_', num2str(selectedDays(i)), '.mat'], "soln_data")
+    save( ['Data\S3_', num2str(selectedDays(i)), '.mat'], "soln_data")
 end
 
 %% End of Program
