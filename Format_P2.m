@@ -63,7 +63,7 @@ for i = 1:length(daysAfter)
     data_gb_datehr.Properties.RowNames = {};
     test_data = removevars(data_gb_datehr,{'date','hour','GroupCount'});
     test_data = renamevars(test_data,["datetime","mean_hmd","mean_spd","mean_tmp","mean_pm2d5","mean_lat","mean_lon"], ...
-                 ["time","hmd","spd","tmp","pm2d5","lat","lot"]);
+                 ["time","hmd","spd","tmp","pm2d5","lat","lon"]);
     soln_data = test_data.pm2d5;
     save( ['Data\S2_', num2str(daysAfter(i)), '.mat'], "soln_data")
     test_data = removevars(test_data,{'pm2d5'});

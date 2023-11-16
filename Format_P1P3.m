@@ -57,7 +57,7 @@ for i = 1:length(selectedDays)
     data_gb_datehr.Properties.RowNames = {};
     test_data = removevars(data_gb_datehr,{'date','hour','GroupCount'});
     test_data = renamevars(test_data,["datetime","mean_hmd","mean_spd","mean_tmp","mean_pm2d5","mean_lat","mean_lon"], ...
-                 ["time","hmd","spd","tmp","pm2d5","lat","lot"]);
+                 ["time","hmd","spd","tmp","pm2d5","lat","lon"]);
     soln_data = test_data.pm2d5;
     save( ['Data\S1_', num2str(selectedDays(i)), '.mat'], "soln_data")
     test_data = removevars(test_data,{'pm2d5'});
@@ -103,7 +103,7 @@ for i = 1:length(selectedDays)
     lat = ones(size(timePoints)) * 23.0470182;  % Random latitude values
     lon = ones(size(timePoints)) * 113.144248;  % Random longitude values
 
-    test_data = table(timePoints', hmd', spd', tmp', pm2d5', lat', lon', 'VariableNames', {'Time', 'Humidity', 'Speed', 'Temperature', 'PM2.5', 'Latitude', 'Longitude'});
+    test_data = table(timePoints', hmd', spd', tmp', pm2d5', lat', lon', 'VariableNames', ["time","hmd","spd","tmp","pm2d5","lat","lon"]);
     save( ['Data\T3_', num2str(selectedDays(i)), '.mat'], "test_data")
 
     % Make the solution
