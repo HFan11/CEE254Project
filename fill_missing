@@ -1,0 +1,37 @@
+function data_filled = fill_missing(~)
+%load("cleaned_P2_1.mat");
+%sensorDataCells = processAndSplitSensorData(cleaned_P2_1);
+numCells = numel(sensorDataCells);
+for i = 1:numCells
+    data = sensorDataCells{1,i};
+    % Convert the 'time' column to datetime objects
+    data.time = datetime(data.time);
+    % Sort the table by the 'time' column
+    sorted_data = sortrows(data, 'time');
+    end_ = length(data.time)
+    end_day = sorted_data.time(end_);
+    averagedTable = averageByFiveMinutes(sorted_data);
+    day = 7; %7 days
+    step = 5; %5 minutes
+    time = end_day-caldays(day):minutes(step):end_day; %replace now to the selected days
+
+    data = table('size',[length(time),1],'VariableTypes',{'double'},'VariableNames',{'data'});
+
+    data_raw = averagedTable;
+    time_raw = averagedTable.time; %load time data
+    n = height(time_raw);
+    
+    for j = 1:n
+
+        idx = find(time_raw(j,:) == time);
+    if ~isempty(idx) % Ensure that idx is not empty
+
+        data{idx, 'data'} = data_raw.pm2d5(j);
+    end
+    end
+    
+if any(idx > 1) % Check if any index is greater than 1
+    data_filled = fillmissing(data, 'previous', 'DataVariables', {'data'});
+end
+end
+end
