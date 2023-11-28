@@ -1,4 +1,4 @@
-function pred_pm2d5=grp_model(train_data,test_data,problem_type)
+function pred_pm2d5 = grp_model(train_data,test_data,problem_type)
 %% 
 width=30; % width of moving mean window
 indexes=[2,3,4,5,6,7]; % indexes of columns averaged
