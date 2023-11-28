@@ -2,7 +2,7 @@ function nrmse=validation_grp(train_data,test_data,problem_type)
  
 width=50; % width of moving mean window
 indexes=[2,3,4,5,6,7]; % indexes of columns averaged
-dt = 30;% intervals of averaging
+dt = 10;% intervals of averaging
 input_cols=[1,2,6,7]; % indexes of input columns
 test_cols=[1,2,5,6]; % indexes of test columns
 ker_func='exponential';
