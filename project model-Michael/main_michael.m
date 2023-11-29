@@ -3,11 +3,11 @@ clear all
 width=30; % width of moving mean window
 indexes=[2,3,4,5,6,7]; % indexes of columns averaged
 dt = 5;% intervals of averaging
-input_cols=[1,2,3,4,5,6]; % indexes of input columns
-test_cols=[1,2,3,4,5,6]; % indexes of test columns
+input_cols=[1,2,3]; % indexes of input columns
+test_cols=[1,2,3]; % indexes of test columns
 ker_func='rbf';
-train_file='separated_train_data_long_term_5_var.mat';
-test_file='test_data_long_term_5_var.mat';
+train_file='separated_train_data_long_term_0_var.mat';
+test_file='test_data_long_term_0_var.mat';
 %x=data_static{5}.time;
 %y=data_static{5}.pm2d5;
     %figure(1);
@@ -76,21 +76,25 @@ y_val = [];
 for i = 1:length(val_data_raw)
     val_data_ = val_data_raw{i}; % Get the i-th dataset
 
-    % If the first column is time and needs to be converted
-    if isdatetime(val_data_.time)
-        time_val = (datenum(val_data_.time)) * 24 * 60 * 60;
-    else
-        time_val = val_data_.time; % If already in numeric format
+    features_val = [];
+    for col = input_cols
+        if col == 1 % If the column is time
+            if isdatetime(val_data_.time)
+                time_val = (datenum(val_data_.time)) * 24 * 60 * 60;
+                features_val = [features_val, time_val];
+            else
+                features_val = [features_val, val_data_.time];
+            end
+        else
+            features_val = [features_val, val_data_{:, col}];
+        end
     end
-
-    % Extracting features - assuming features are in columns 1 to 6
-    x_val_i = [time_val, val_data_{:, 2:6}];
 
     % Extracting target variable - assuming it's in column 5
     y_val_i = val_data_{:, 5};
 
     % Concatenating with previous data
-    x_val = [x_val; x_val_i];
+    x_val = [x_val; features_val];
     y_val = [y_val; y_val_i];
 end
 
@@ -122,4 +126,4 @@ for col=test_cols
 end
 x_test=cat(1,x_test,cat(2,x{i}{:}));
 y_pred_test=predict(SVMModel,x_test);
-pred_pm2d5=y_pred_test
+pred_pm2d5=y_pred_test;
