@@ -109,11 +109,11 @@ RMSE=rms(y_pred-y_input);
 clear x;
 clear time;
 
-test_data=processAndSplitSensorData_for_inter_test(test_data);
+tup{1}=test_data;
+test_data=tup;
 for i=1:length(test_data)
     clear test_data_;
-    test_data_ = missing_filling_for_inter_test(test_data{i},dt_test);
-    
+    test_data_=test_data{i};
     for col=test_cols
         if col==1
             time{i}{col} = test_data_.time;
