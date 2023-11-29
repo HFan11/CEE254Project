@@ -1,3 +1,4 @@
+function pred_pm2d5=svm_model(train_data,test_data,problem_type)
 clear all
 %% parameterized
 width=30; % width of moving mean window
@@ -7,8 +8,12 @@ input_cols=[1,2,3]; % indexes of input columns
 features_to_standardize = [true, true,false];
 test_cols=[1,2,3]; % indexes of test columns
 ker_func='rbf';
-train_file='separated_train_data_long_term_0_var.mat';
-test_file='test_data_long_term_0_var.mat';
+
+if problem_type==3
+    dt_test=5;
+else
+    dt_test=60;
+end
     
 data=load(train_file);
 raw_data=data.train_data_static;
@@ -95,3 +100,4 @@ end
 x_test=cat(1,x_test,cat(2,x{i}{:}));
 y_pred_test=predict(SVMModel,x_test);
 pred_pm2d5=y_pred_test;
+end

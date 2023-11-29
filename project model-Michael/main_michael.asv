@@ -3,11 +3,11 @@ clear all
 width=30; % width of moving mean window
 indexes=[2,3,4,5,6,7]; % indexes of columns averaged
 dt = 5;% intervals of averaging
-input_cols=[1,2,3,6,7]; % indexes of input columns
-test_cols=[1,2,3,5,6]; % indexes of test columns
+input_cols=[1,2,3]; % indexes of input columns
+test_cols=[1,2,3]; % indexes of test columns
 ker_func='rbf';
-train_file='separated_train_data_long_term_5_var.mat';
-test_file='test_data_long_term_5_var.mat';
+train_file='separated_train_data_long_term_0_var.mat';
+test_file='test_data_long_term_0_var.mat';
 %x=data_static{5}.time;
 %y=data_static{5}.pm2d5;
     %figure(1);
@@ -30,7 +30,7 @@ splitPoint = floor(numDataPoints * 0.8);
 
 % Split the data into training and validation sets
 train_data_raw = raw_data(1:splitPoint);
-val_data_raw = raw_data(splitPoint+1:end);
+%val_data_raw = raw_data(splitPoint+1:splitPoint+100);
 
 % Preprocess the training data
 for i=1:length(train_data_raw)
@@ -70,13 +70,13 @@ for i = 1:length(val_data_raw)
 end
 
 % Assuming val_data_raw is a cell array of tables/matrices
-x_val = [];
-y_val = [];
+%x_val = [];
+%y_val = [];
 
-for i = 1:length(val_data_raw)
-    val_data_ = val_data_raw{i}; % Get the i-th dataset
+%for i = 1:length(val_data_raw)
+    %val_data_ = val_data_raw{i}; % Get the i-th dataset
 
-    features_val = [];
+    %features_val = [];
     for col = input_cols
         if col == 1 % If the column is time
             if isdatetime(val_data_.time)
@@ -102,11 +102,11 @@ end
 SVMModel = fitrsvm(x_train, y_train, 'Standardize', true, 'KernelFunction', ker_func);
 
 % Validate the model on the validation data
-y_pred_val = predict(SVMModel, x_val);
+y_pred = predict(SVMModel, x_input);
 
 % Calculate RMSE and NRMSE for validation data
-RMSE_val = rms(y_pred_val - y_val);
-normalizing_term_val = sqrt(mean(y_val.^2));
+RMSE_val = rms(y_pred - y_input);
+normalizing_term_val = sqrt(mean(y_input.^2));
 NRMSE_val = RMSE_val / normalizing_term_val;
     
 %% % testing
