@@ -4,4 +4,5 @@ intervalMinutes=minutes(intervalMinutes);
 inputTable=table2timetable(inputTable);
 missing_filled = retime(inputTable,'regular','pchip','TimeStep',intervalMinutes);
 missing_filled = timetable2table(missing_filled);
+
 end
