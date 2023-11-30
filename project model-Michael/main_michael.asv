@@ -4,14 +4,13 @@ width=30; % width of moving mean window
 indexes=[2,3,4,5,6,7]; % indexes of columns averaged
 dt = 5;% intervals of averaging
 input_cols=[1,2,3]; % indexes of input columns
+features_to_standardize = [true, true,false];
 test_cols=[1,2,3]; % indexes of test columns
 ker_func='rbf';
 train_file='separated_train_data_long_term_0_var.mat';
 test_file='test_data_long_term_0_var.mat';
-%x=data_static{5}.time;
-%y=data_static{5}.pm2d5;
-    %figure(1);
-    %plot(x,y)
+% Random Forest parameters
+numTrees = 100; % Number of trees in the forest
     
 data=load(train_file);
 raw_data=data.train_data_static;
@@ -60,50 +59,27 @@ numDataPoints = size(x_input, 1);
 numTrain = floor(0.8 * numDataPoints);
 numVal = numDataPoints - numTrain;
 
+
+
+
 % Training set
 x_train = x_input(1:numTrain, :);
 y_train = y_input(1:numTrain);
-
-% Validation set
-for i = 1:length(val_data_raw)
-    val_data_ = val_data_raw{i};
-end
-
-% Assuming val_data_raw is a cell array of tables/matrices
-%x_val = [];
-%y_val = [];
-
-%for i = 1:length(val_data_raw)
-    %val_data_ = val_data_raw{i}; % Get the i-th dataset
-
-    %features_val = [];
-    for col = input_cols
-        if col == 1 % If the column is time
-            if isdatetime(val_data_.time)
-                time_val = (datenum(val_data_.time)) * 24 * 60 * 60;
-                features_val = [features_val, time_val];
-            else
-                features_val = [features_val, val_data_.time];
-            end
-        else
-            features_val = [features_val, val_data_{:, col}];
-        end
-    end
-
-    % Extracting target variable - assuming it's in column 5
-    y_val_i = val_data_{:, 5};
-
-    % Concatenating with previous data
-    x_val = [x_val; features_val];
-    y_val = [y_val; y_val_i];
-end
+    
+% normalize the needed feature 
 
 % Train the SVM regression model on the training data
-SVMModel = fitrsvm(x_train, y_train, 'Standardize', true, 'KernelFunction', ker_func);
+%SVMModel = fitrsvm(x_train, y_train, 'Standardize', true, 'KernelFunction', ker_func);
 
 % Validate the model on the validation data
-y_pred = predict(SVMModel, x_input);
+%y_pred = predict(SVMModel, x_input);
 
+
+% Train the Random Forest regression model on the training data
+RFModel = TreeBagger(numTrees, x_train, y_train, 'Method', 'regression');
+
+% Validate the model on the entire dataset
+y_pred = predict(RFModel, x_input);
 % Calculate RMSE and NRMSE for validation data
 RMSE_val = rms(y_pred - y_input);
 normalizing_term_val = sqrt(mean(y_input.^2));
@@ -125,5 +101,6 @@ for col=test_cols
     end
 end
 x_test=cat(1,x_test,cat(2,x{i}{:}));
-y_pred_test=predict(SVMModel,x_test);
+%y_pred_test=predict(SVMModel,x_test);
+y_pred_test=predict(RFModel,x_test);
 pred_pm2d5=y_pred_test;
