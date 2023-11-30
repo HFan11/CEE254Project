@@ -1,4 +1,3 @@
-function pred_pm2d5 = Michael_pred_model(train_file, test_file,problem_type)
 %% parameterized
 width=30; % width of moving mean window
 indexes=[2,3,4,5,6,7]; % indexes of columns averaged
@@ -106,4 +105,3 @@ pred_pm2d5=y_pred_test;
 RMSE_test = rms(y_pred_test - y_test);
 normalizing_term_test = sqrt(mean(y_test.^2));
 NRMSE_test = RMSE_test / normalizing_term_test;
-end
