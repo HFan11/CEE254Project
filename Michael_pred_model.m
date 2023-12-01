@@ -9,10 +9,10 @@ for problem_type = 1:3
         minLeafSize = 10; % Minimum number of samples per leaf
         numVarsToSample = 'all'; % Options: 'all', 'log2', a fraction of the total, or an integer
     elseif problem_type == 2
-        width=10; % width of moving mean window
-        dt = 30;
+        width=30; % width of moving mean window
+        dt = 5;
         numTrees = 1000; % Number of trees in the forest
-        maxDepth = 15; % Maximum depth of each tree
+        maxDepth = 20; % Maximum depth of each tree
         minLeafSize = 10; % Minimum number of samples per leaf
         numVarsToSample = 'all'; % Options: 'all', 'log2', a fraction of the total, or an integer
     elseif problem_type == 3
@@ -23,33 +23,23 @@ for problem_type = 1:3
         minLeafSize = 1; % Minimum number of samples per leaf
         numVarsToSample = 'all'; % Options: 'all', 'log2', a fraction of the total, or an integer
     end
+end
 indexes=[2,3,4,5,6,7]; % indexes of columns averaged
-input_cols=[1,2,3,4,6,7]; % indexes of input columns
+input_cols=[2,3]; % indexes of input columns
 %features_to_standardize = [true, true,false,true];
-test_cols=[1,2,3,4,5,6]; % indexes of test columns
+test_cols=[2,3]; % indexes of test columns
 %ker_func='rbf';
 %train_file='separated_train_data_short_term_10_var.mat';
 %test_file='test_data_short_term_10_var.mat';
-raw_data=processAndSplitSensorData(train_data);
+train_data=processAndSplitSensorData(train_data);
 x_input=[];
 y_input=[];
 x_test=[];
 y_test=[];
-    
 %% preprocess
-
-% Determine the split point for 80% training and 20% validation
-numDataPoints = length(raw_data);
-splitPoint = floor(numDataPoints * 0.8);
-
-% Split the data into training and validation sets
-train_data_raw = raw_data;
-%val_data_raw = raw_data(splitPoint+1:splitPoint+100);
-
-% Preprocess the training data
-for i=1:length(train_data_raw)
+for i=1:length(train_data)
     clear train_data_;
-    train_data_=remove_outlier(train_data_raw{i});
+    train_data_=remove_outlier(train_data{i});
     train_data_=averageByTimeInterval(train_data_,dt);
     train_data_ = missing_filling(train_data_,dt);
     train_data_=move_mean(train_data_,width,indexes);
@@ -57,46 +47,38 @@ for i=1:length(train_data_raw)
         if col==1
             time{i}{col} = train_data_.time;
             x{i}{col}= (datenum(time{i}{col}))*24*60*60;
-            
+        
         else
             x{i}{col}=train_data_{:,col};
         end
     end
     x_input=cat(1,x_input,cat(2,x{i}{:}));
     y_{i}=train_data_{:,5};
-    y_input=cat(1,y_input,y_{i});
+    y_input=cat(1,y_input,y_{i}); 
 end
-    
-%% Implement the Prediction Model with Cross-Validation
+%% Shuffle the dataset
+randIndices = randperm(size(x_input, 1));
+x_input_shuffled = x_input(randIndices, :);
+y_input_shuffled = y_input(randIndices, :);
 
-% Number of folds for cross-validation
+% K-fold cross-validation
 k = 5;
-
-% Initialize variables to store the cross-validation results
-cv_RMSE = zeros(k, 1);
-cv_NRMSE = zeros(k, 1);
-
-% Cross-validation indices
-cv_indices = crossvalind('Kfold', size(x_input, 1), k);
+cv = cvpartition(size(x_input_shuffled, 1), 'KFold', k);
 
 for i = 1:k
-    % Split data into training and validation for the current fold
-    validationIdx = (cv_indices == i); 
-    trainIdx = ~validationIdx;
-    
-    x_train = x_input(trainIdx, :);
-    y_train = y_input(trainIdx);
-    x_val = x_input(validationIdx, :);
-    y_val = y_input(validationIdx);
+    x_train = x_input_shuffled(training(cv, i), :);
+    y_train = y_input_shuffled(training(cv, i), :);
+    x_val = x_input_shuffled(test(cv, i), :);
+    y_val = y_input_shuffled(test(cv, i), :);
 
-    % Train Random Forest on the training set
+    % Train the Random Forest model
     RFModel = TreeBagger(numTrees, x_train, y_train, 'Method', 'regression', ...
-                     'MaxNumSplits', maxDepth, ...
-                     'MinLeafSize', minLeafSize, ...
-                     'NumVariablesToSample', numVarsToSample, ...
-                     'OOBPrediction', 'on', 'OOBPredictorImportance', 'on');
+                         'MaxNumSplits', maxDepth, ...
+                         'MinLeafSize', minLeafSize, ...
+                         'NumVariablesToSample', numVarsToSample, ...
+                         'OOBPrediction', 'on', 'OOBPredictorImportance', 'on');
 
-    % Validate the model on the validation set
+    % Predict on the validation set
     y_pred_val = predict(RFModel, x_val);
     
     % Calculate RMSE and NRMSE for the validation set
@@ -108,11 +90,6 @@ for i = 1:k
     cv_RMSE(i) = RMSE_val;
     cv_NRMSE(i) = NRMSE_val;
 end
-
-% Calculate average RMSE and NRMSE across all folds
-avg_RMSE = mean(cv_RMSE);
-avg_NRMSE = mean(cv_NRMSE);
-    
 %% % testing
 %y_test=soln_data;    
 clear x;
