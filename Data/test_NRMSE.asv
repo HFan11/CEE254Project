@@ -1,18 +1,21 @@
 %% parameterized
-width=30; % width of moving mean window
+width=5; % width of moving mean window
 indexes=[2,3,4,5,6,7]; % indexes of columns averaged
 dt = 5;% intervals of averaging
 input_cols=[1,2,3,4,6,7]; % indexes of input columns
 %features_to_standardize = [true, true,false,true];
-test_cols=[1,2,3,4,5]; % indexes of test columns
+test_cols=[1,2,3,4,5,6]; % indexes of test columns
 %ker_func='rbf';
 %train_file='separated_train_data_short_term_10_var.mat';
 %test_file='test_data_short_term_10_var.mat';
 % Random Forest parameters
-numTrees = 500; % Number of trees in the forest
-    
-raw_data=train_data;
+numTrees = 250; % Number of trees in the forest
 
+maxDepth = 15; % Maximum depth of each tree
+minLeafSize = 1; % Minimum number of samples per leaf
+numVarsToSample = 'all'; % Options: 'all', 'log2', a fraction of the total, or an integer
+
+raw_data=train_data;
 raw_data=processAndSplitSensorData(raw_data);
 x_input=[];
 y_input=[];
@@ -34,7 +37,7 @@ for i=1:length(train_data_raw)
     clear train_data_;
     train_data_=remove_outlier(train_data_raw{i});
     train_data_=averageByTimeInterval(train_data_,dt);
-    train_data_ = missing_filling(train_data_,dt);
+    train_data_=missing_filling(train_data_,dt);
     train_data_=move_mean(train_data_,width,indexes);
     for col=input_cols
         if col==1
@@ -48,40 +51,57 @@ for i=1:length(train_data_raw)
     x_input=cat(1,x_input,cat(2,x{i}{:}));
     y_{i}=train_data_{:,5};
     y_input=cat(1,y_input,y_{i});
+end    
+%% Implement the Prediction Model with Cross-Validation
+
+% Number of folds for cross-validation
+k = 5;
+
+% Initialize variables to store the cross-validation results
+cv_RMSE = zeros(k, 1);
+cv_NRMSE = zeros(k, 1);
+
+% Cross-validation indices
+cv_indices = crossvalind('Kfold', size(x_input, 1), k);
+
+for i = 1:k
+    % Split data into training and validation for the current fold
+    validationIdx = (cv_indices == i); 
+    trainIdx = ~validationIdx;
+    
+    x_train = x_input(trainIdx, :);
+    y_train = y_input(trainIdx);
+    x_val = x_input(validationIdx, :);
+    y_val = y_input(validationIdx);
+
+    % Train Random Forest on the training set
+    RFModel = TreeBagger(numTrees, x_train, y_train, 'Method', 'regression', ...
+                     'MaxNumSplits', maxDepth, ...
+                     'MinLeafSize', minLeafSize, ...
+                     'NumVariablesToSample', numVarsToSample, ...
+                     'OOBPrediction', 'on', 'OOBPredictorImportance', 'on');
+
+    % Validate the model on the validation set
+    y_pred_val = predict(RFModel, x_val);
+    
+    % Calculate RMSE and NRMSE for the validation set
+    RMSE_val = rms(y_pred_val - y_val);
+    normalizing_term_val = sqrt(mean(y_val.^2));
+    NRMSE_val = RMSE_val / normalizing_term_val;
+
+    % Store the results
+    cv_RMSE(i) = RMSE_val;
+    cv_NRMSE(i) = NRMSE_val;
 end
-    
-%% implement the prediction model
-    
-% Split the data into training and validation sets
-numDataPoints = size(x_input, 1);
-numTrain = floor(0.8 * numDataPoints);
-numVal = numDataPoints - numTrain;
 
+% Calculate average RMSE and NRMSE across all folds
+avg_RMSE = mean(cv_RMSE);
+avg_NRMSE = mean(cv_NRMSE);
 
+% Display the results
+fprintf('Average RMSE across %d folds: %f\n', k, avg_RMSE);
+fprintf('Average NRMSE across %d folds: %f\n', k, avg_NRMSE);
 
-
-% Training set
-x_train = x_input(1:numTrain, :);
-y_train = y_input(1:numTrain);
-    
-% normalize the needed feature 
-
-% Train the SVM regression model on the training data
-%SVMModel = fitrsvm(x_train, y_train, 'Standardize', true, 'KernelFunction', ker_func);
-
-% Validate the model on the validation data
-%y_pred = predict(SVMModel, x_input);
-
-
-% Train the Random Forest regression model on the training data
-RFModel = TreeBagger(numTrees, x_train, y_train, 'Method', 'regression');
-
-% Validate the model on the entire dataset
-y_pred = predict(RFModel, x_input);
-% Calculate RMSE and NRMSE for validation data
-RMSE_val = rms(y_pred - y_input);
-normalizing_term_val = sqrt(mean(y_input.^2));
-NRMSE_val = RMSE_val / normalizing_term_val;
     
 %% % testing
 y_test=soln_data;    
