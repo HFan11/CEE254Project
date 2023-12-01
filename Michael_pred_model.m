@@ -1,4 +1,4 @@
-function pred_pm2d5 = Michael_pred_model(train_file, test_file,problem_type)
+function pred_pm2d5 = Michael_pred_model(train_data,test_data,problem_type)
 %% parameterized
 for problem_type = 1:3
     if problem_type == 1
@@ -30,10 +30,7 @@ test_cols=[1,2,3,4,5,6]; % indexes of test columns
 %ker_func='rbf';
 %train_file='separated_train_data_short_term_10_var.mat';
 %test_file='test_data_short_term_10_var.mat';
-    
-raw_data=train_data;
-
-raw_data=processAndSplitSensorData(raw_data);
+raw_data=processAndSplitSensorData(train_data);
 x_input=[];
 y_input=[];
 x_test=[];
@@ -115,13 +112,9 @@ end
 % Calculate average RMSE and NRMSE across all folds
 avg_RMSE = mean(cv_RMSE);
 avg_NRMSE = mean(cv_NRMSE);
-
-% Display the results
-fprintf('Average RMSE across %d folds: %f\n', k, avg_RMSE);
-fprintf('Average NRMSE across %d folds: %f\n', k, avg_NRMSE);
     
 %% % testing
-y_test=soln_data;    
+%y_test=soln_data;    
 clear x;
 clear time;
 for col=test_cols

@@ -11,9 +11,9 @@ for problem_type = 1:3
 
     for var_level = [0,5,10]
         train_data = load(['separated_train_data_',problem_name,'_',...
-                          %num2str(var_level),'_var.mat']).train_data_static;
+                          num2str(var_level),'_var.mat']).train_data_static;
         test_data = load(['test_data_',problem_name,'_',...
-                           %num2str(var_level),'_var.mat']).test_data;
+                           num2str(var_level),'_var.mat']).test_data;
         pred_pm2d5 = pm2d5_pred_model(train_data, test_data, problem_type);
         save(['Output/',problem_name,'_',num2str(var_level),'.mat'],'pred_pm2d5');
         clear pred_pm2d5;
