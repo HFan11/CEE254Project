@@ -1,0 +1,87 @@
+\documentclass[12pt]{article}
+\usepackage{geometry} % to change the page dimensions
+\usepackage{graphicx} % to include images
+\usepackage{hyperref} % for hyperlinks
+\usepackage[backend=biber,style=apa]{biblatex}
+
+% Adjust the page margins
+\geometry{a4paper}
+
+\title{
+    \textbf{Final Project Proposal: \\Short-term water demand prediction} \\
+    \vspace{0.5em}
+    \large Project Category: General Machine Learning
+}
+
+\author{
+    Haocheng Fan, hfan11 \\
+}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Motivation}
+My homwtown Shaoxing, often labeled as the "Eastern Venice" of China, is witnessing profound challenges in water resource management. 
+As climate unpredictability intensifies, the reliability of available water resources is becoming increasingly vital. 
+This urgency is further exacerbated by technological progression and population surge, escalating water demand complexities. 
+Addressing these multifaceted challenges, especially in the realm of optimizing operational costs and energy efficiency amidst water supply uncertainties, 
+is imperative. Above all, we aim to explore the potential of machine learning in devising short-term water demand forecasting mechanisms to ensure judicious water utilization scheduling.
+
+\section*{Method}
+
+We intend to evaluate three distinct machine learning methods to identify the best-performing model for our specific context. These methods include the Linear Regression Model (LRM), Decision Tree Model (DTM), and Support Vector Regression Model (SVRM).
+ 
+
+\section*{Intended Experiments}
+\begin{enumerate}
+
+    \item \textbf{Data Collection}
+
+
+    \item \textbf{Data Pre-processing:}
+    \begin{itemize}
+        \item Remove the outliers from the data.
+        \item Select reasonable variables for the models.
+        \item Construct the feature matrix.
+    \end{itemize}
+
+    \item \textbf{Correlation Analysis}
+    
+    \item \textbf{Model Preparation:}
+    \begin{itemize}
+        \item Set up the three machine learning model algorithms.
+    \end{itemize}
+
+    \item \textbf{Model Training:}
+    \begin{itemize}
+        \item Train the models using the feature matrix.
+    \end{itemize}
+
+    \item \textbf{Model Evaluation:}
+    \begin{itemize}
+        \item Evaluate the models using the following metrics:
+        \begin{itemize}
+            \item Mean Squared Error ($MSE$)
+            \item Root Mean Squared Error ($RMSE$)
+            \item Mean Absolute Error ($MAE$)
+            \item Coefficient of Determination ($R^2$)
+        \end{itemize}
+    \end{itemize}
+
+    \item \textbf{Choose the best model for water demand forecast}
+\end{enumerate}
+
+
+\section*{Optional: Dataset and Prior Research}
+\textbf{Relevant Dataset:} Provide a pointer to a dataset that might be relevant to your project. \\
+\textbf{Prior Research:} \\
+Q, Shuang \& Zhao, RT. (2021). Water Demand Prediction Using Machine Learning Methods: A Case Study of the Beijing–Tianjin–Hebei Region in China. \textit{Water}, 13(3), 310. https://doi.org/10.3390/w13030310.\\
+
+
+Kavya, M., Mathew, Aneesh, Shekar, Padala Raja & Sarwesh, P. (2023). Short term water demand forecast modelling using artificial intelligence for smart water management. \textit{Sustainable Cities and Society}, 95, 104610. https://doi.org/10.1016/j.scs.2023.104610.
+
+
+
+\end{document}
